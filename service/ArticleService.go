@@ -85,7 +85,7 @@ func (a *ArticleService) UpdateBlog (res http.ResponseWriter, req *http.Request)
 	}
 	err := a.service.UpdateBlog(blog)
 	if err != nil {
-		http.Error(res, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(res, err.Error(), http.StatusNotFound)
 		return
 	}
 	io.WriteString(res,"Blog UPDATED")
