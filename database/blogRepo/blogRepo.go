@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/samuelorji/simpleblog/database"
 	"github.com/samuelorji/simpleblog/model"
 	"strconv"
@@ -56,8 +57,8 @@ func (m *mysqlBlogRepo) FetchAllBlogs() ([]*model.Blog, error) {
 
 func (m *mysqlBlogRepo) FetchBlog(id int) (*model.Blog, error) {
 
-	idString := strconv.Itoa(id)
-	queryString := fmt.Sprintf("SELECT * from blog where id = %s", idString)
+	//idString := strconv.Itoa(id)
+	queryString := fmt.Sprintf("SELECT * from blog where id = %d", id)
 	rows, err := m.db.Query(queryString)
 	if err != nil {
 		return nil, check(err)
@@ -93,9 +94,13 @@ func (m *mysqlBlogRepo) AddBlog(blog model.Blog) error {
 
 	defer stmt.Close()
 
-	_, er := stmt.Exec(blog.Title, blog.Content, blog.Image)
+	rows, er := stmt.Exec(blog.Title, blog.Content, blog.Image)
 	if er != nil {
 		check(er)
+	}
+	num_rows_affected , _  := rows.RowsAffected()
+	if(num_rows_affected == 0){
+		return errors.New("Unable to Insert Blog")
 	}
 	return nil
 
@@ -111,9 +116,14 @@ func (m *mysqlBlogRepo) UpdateBlog(blog model.Blog) error {
 
 	defer stmt.Close()
 
-	_, er := stmt.Exec(blog.Title, blog.Content, blog.Image, idString)
+	rows, er := stmt.Exec(blog.Title, blog.Content, blog.Image, idString)
+
 	if er != nil {
 		check(er)
+	}
+	num_rows_affected , _  := rows.RowsAffected()
+	if(num_rows_affected == 0){
+		return errors.New("Blog does not exist")
 	}
 	return nil
 
